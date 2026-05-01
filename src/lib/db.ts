@@ -58,6 +58,8 @@ export async function dbSetShared(
     .eq("user_id", userId);
   if (error) throw error;
 }
+
+export async function dbGetCustomTemplates(userId: string): Promise<Template[]> {
   const { data, error } = await supabase
     .from("custom_templates")
     .select("*")
