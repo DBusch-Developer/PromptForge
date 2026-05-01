@@ -18,7 +18,7 @@ function loadLocal(): Set<string> {
 }
 
 function saveLocal(favs: Set<string>) {
-  try { localStorage.setItem(LOCAL_KEY, JSON.stringify([...favs])); } catch {}
+  try { localStorage.setItem(LOCAL_KEY, JSON.stringify(Array.from(favs))); } catch {}
 }
 
 function clearLocal() {
