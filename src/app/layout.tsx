@@ -4,8 +4,12 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "PromptForge — AI Prompt Template Library",
   description:
-    "A curated library of 23 production-ready AI prompt templates covering sequence, selection, iteration, chain-of-thought, few-shot, and meta-prompting patterns.",
+    "A curated library of production-ready AI prompt templates covering sequence, selection, iteration, chain-of-thought, few-shot, and meta-prompting patterns.",
   keywords: ["prompt engineering", "AI prompts", "LLM", "ChatGPT", "Claude"],
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
