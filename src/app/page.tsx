@@ -10,6 +10,7 @@ import { useHistory } from "@/hooks/useHistory";
 import type { CustomTemplateInput } from "@/hooks/useCustomTemplates";
 import type { HistoryEntry } from "@/hooks/useHistory";
 import { exportFavoritesAsMarkdown, exportAllAsMarkdown } from "@/lib/export";
+import { dbGetSharedTemplates } from "@/lib/db";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import TemplateCard from "@/components/TemplateCard";
@@ -30,22 +31,35 @@ export default function Home() {
   const [testingTemplate, setTestingTemplate]   = useState<Template | null>(null);
   const [prefilledCode, setPrefilledCode]       = useState<string>("");
   const [authOpen, setAuthOpen]                 = useState(false);
+  const [communityTemplates, setCommunityTemplates] = useState<Template[]>([]);
 
-  // Auth — user flows down into all data hooks
   const { user, loading: authLoading, signIn, signUp, signInMagic, signOut } = useAuth();
   const userId = user?.id ?? null;
 
-  // Data hooks — all accept userId; sync to Supabase when logged in
   const { favorites, toggle, isFavorite, count: favCount } = useFavorites(userId, !authLoading);
   const {
     templates: customTemplates,
     add: addCustom,
     update: updateCustom,
     remove: removeCustom,
+    toggleShare,
     isCustom,
     count: customCount,
+    saveError: templateSaveError,
   } = useCustomTemplates(userId, !authLoading);
   const history = useHistory(userId, !authLoading);
+
+  // Load community templates
+  useEffect(() => {
+    dbGetSharedTemplates()
+      .then(setCommunityTemplates)
+      .catch(console.error);
+  }, []);
+
+  // Refresh community templates when user shares/unshares
+  const refreshCommunity = useCallback(() => {
+    dbGetSharedTemplates().then(setCommunityTemplates).catch(console.error);
+  }, []);
 
   // Keyboard shortcut: / focuses search
   useEffect(() => {
@@ -64,7 +78,12 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKey);
   }, []);
 
-  const filtered = filterTemplates(query, activeCategory, favorites, customTemplates);
+  const filtered = activeCategory === "community"
+    ? communityTemplates.filter((t) => {
+        const q = query.toLowerCase().trim();
+        return q ? [t.title, t.desc, t.code].join(" ").toLowerCase().includes(q) : true;
+      })
+    : filterTemplates(query, activeCategory, favorites, customTemplates);
 
   const favoriteTemplates = [...TEMPLATES, ...customTemplates].filter((t) =>
     favorites.has(t.id)
@@ -89,6 +108,11 @@ export default function Home() {
   }, []);
 
   const handleOpenHistory = useCallback(() => setActiveView("history"), []);
+
+  const handleToggleShare = useCallback((id: string, isShared: boolean, authorName?: string) => {
+    toggleShare(id, isShared, authorName);
+    setTimeout(refreshCommunity, 500); // refresh community list after share
+  }, [toggleShare, refreshCommunity]);
 
   // ── Builder ───────────────────────────────────────────────────────────
   const handleSave = useCallback((input: CustomTemplateInput) => {
@@ -163,6 +187,7 @@ export default function Home() {
         favoriteCount={favCount}
         customCount={customCount}
         historyCount={history.count}
+        communityCount={communityTemplates.length}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onOpenBuilder={() => handleOpenBuilder()}
@@ -191,7 +216,9 @@ export default function Home() {
               initialCode={prefilledCode}
               onSave={handleSave}
               onUpdate={handleUpdate}
+              onToggleShare={handleToggleShare}
               onCancel={handleCancel}
+              userEmail={user?.email}
             />
           )}
 
@@ -226,8 +253,8 @@ export default function Home() {
                       isFavorite={isFavorite(template.id)}
                       onToggleFavorite={toggle}
                       isCustom={isCustom(template.id)}
-                      onEdit={handleOpenBuilder}
-                      onDelete={removeCustom}
+                      onEdit={activeCategory !== "community" ? handleOpenBuilder : undefined}
+                      onDelete={activeCategory !== "community" ? removeCustom : undefined}
                       onTest={handleOpenTester}
                     />
                   ))}
@@ -246,6 +273,15 @@ export default function Home() {
         onSignUp={signUp}
         onMagicLink={signInMagic}
       />
+      {/* Sync error banner */}
+      {templateSaveError && (
+        <div className="fixed bottom-4 right-4 z-50 max-w-sm px-4 py-3
+                        bg-red-500/10 border border-red-500/40 rounded-lg
+                        text-[12px] text-red-300 leading-relaxed shadow-lg">
+          <p className="font-medium mb-1">Sync warning</p>
+          <p>{templateSaveError}</p>
+        </div>
+      )}
     </div>
   );
 }

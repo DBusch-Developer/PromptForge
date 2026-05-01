@@ -16,7 +16,7 @@ function getTitle(cat: ActiveCategory, view: "library" | "builder" | "tester" | 
   if (view === "history") return "Prompt History";
   if (cat === "all")      return "All Templates";
   if (cat === "favorites") return "Favorites";
-  if (cat === "custom")   return "My Templates";
+  if (cat === "community") return "Community Library 🌐";
   return getCategoryLabel(cat);
 }
 

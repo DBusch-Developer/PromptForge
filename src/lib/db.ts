@@ -14,23 +14,50 @@ function templateToRow(userId: string, t: Template) {
     description: t.desc,
     code:        t.code,
     tip:         t.tip ?? null,
+    is_shared:   t.isShared ?? false,
+    author_name: t.authorName ?? null,
   };
 }
 
 function rowToTemplate(row: Record<string, unknown>): Template {
   return {
-    id:    row.id    as string,
-    cat:   row.cat   as string,
-    title: row.title as string,
-    desc:  row.description as string,
-    code:  row.code  as string,
-    tip:   row.tip   as string | undefined,
+    id:         row.id          as string,
+    cat:        row.cat         as string,
+    title:      row.title       as string,
+    desc:       row.description as string,
+    code:       row.code        as string,
+    tip:        row.tip         as string | undefined,
+    isShared:   row.is_shared   as boolean | undefined,
+    authorName: row.author_name as string | undefined,
   };
 }
 
 // ─── Custom Templates ─────────────────────────────────────────────────────
 
-export async function dbGetCustomTemplates(userId: string): Promise<Template[]> {
+export async function dbGetSharedTemplates(): Promise<Template[]> {
+  const { data, error } = await supabase
+    .from("custom_templates")
+    .select("*")
+    .eq("is_shared", true)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []).map(rowToTemplate);
+}
+
+export async function dbSetShared(
+  userId: string,
+  templateId: string,
+  isShared: boolean,
+  authorName?: string
+): Promise<void> {
+  const { error } = await supabase
+    .from("custom_templates")
+    .update({ is_shared: isShared, author_name: authorName ?? null })
+    .eq("id", templateId)
+    .eq("user_id", userId);
+  if (error) throw error;
+}
   const { data, error } = await supabase
     .from("custom_templates")
     .select("*")

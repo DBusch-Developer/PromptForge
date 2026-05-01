@@ -31,10 +31,12 @@ const BLANK: CustomTemplateInput = {
 
 interface TemplateBuilderProps {
   editingTemplate?: Template | null;
-  initialCode?: string;           // pre-fill code from tester "Save as Template"
+  initialCode?: string;
   onSave: (input: CustomTemplateInput) => void;
   onUpdate: (id: string, input: CustomTemplateInput) => void;
+  onToggleShare?: (id: string, isShared: boolean, authorName?: string) => void;
   onCancel: () => void;
+  userEmail?: string | null;
 }
 
 export default function TemplateBuilder({
@@ -42,7 +44,9 @@ export default function TemplateBuilder({
   initialCode,
   onSave,
   onUpdate,
+  onToggleShare,
   onCancel,
+  userEmail,
 }: TemplateBuilderProps) {
   const isEditing = !!editingTemplate;
 
@@ -232,6 +236,49 @@ export default function TemplateBuilder({
               ))}
             </div>
           </div>
+
+          {/* Share to community — only shown when editing an existing custom template */}
+          {isEditing && editingTemplate && onToggleShare && (
+            <div className={`px-4 py-3 rounded-[10px] border transition-colors
+              ${editingTemplate.isShared
+                ? "bg-accent-green/10 border-accent-green/30"
+                : "bg-bg-surface border-border-subtle"
+              }`}>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[13px] font-medium text-text-primary">
+                    Share to Community Library
+                  </div>
+                  <div className="text-[11px] text-text-muted mt-0.5">
+                    {editingTemplate.isShared
+                      ? "Visible to all PromptForge users. Toggle off to make private again."
+                      : "Let everyone use this template. You can unshare anytime."}
+                  </div>
+                </div>
+                <button
+                  onClick={() => onToggleShare(
+                    editingTemplate.id,
+                    !editingTemplate.isShared,
+                    userEmail?.split("@")[0] ?? "Anonymous"
+                  )}
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full
+                              border-2 border-transparent transition-colors duration-200
+                              focus:outline-none cursor-pointer
+                              ${editingTemplate.isShared ? "bg-accent-green" : "bg-border-muted"}`}
+                >
+                  <span className={`inline-block h-5 w-5 rounded-full bg-white shadow
+                                    transform transition-transform duration-200
+                                    ${editingTemplate.isShared ? "translate-x-5" : "translate-x-0"}`}
+                  />
+                </button>
+              </div>
+              {editingTemplate.isShared && (
+                <p className="text-[11px] text-accent-green mt-2">
+                  ✓ Shared as "{editingTemplate.authorName ?? userEmail?.split("@")[0]}"
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Save / Cancel */}
           <div className="flex items-center gap-3 pt-2">

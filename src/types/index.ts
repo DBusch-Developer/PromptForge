@@ -8,11 +8,13 @@ export interface Category {
 
 export interface Template {
   id: string;
-  cat: string;            // matches Category.id
+  cat: string;
   title: string;
-  desc: string;           // 1–2 sentence description shown on card
-  code: string;           // the copyable prompt template text
-  tip?: string;           // optional "when to use" guidance (HTML allowed)
+  desc: string;
+  code: string;
+  tip?: string;
+  isShared?: boolean;
+  authorName?: string;
 }
 
 // ─── UI state types ───────────────────────────────────────────────────────

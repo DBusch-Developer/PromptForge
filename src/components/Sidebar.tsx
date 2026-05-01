@@ -13,6 +13,7 @@ interface SidebarProps {
   favoriteCount: number;
   customCount: number;
   historyCount: number;
+  communityCount: number;
   isOpen: boolean;
   onClose: () => void;
   onOpenBuilder: () => void;
@@ -34,6 +35,7 @@ export default function Sidebar({
   favoriteCount,
   customCount,
   historyCount,
+  communityCount,
   isOpen,
   onClose,
   onOpenBuilder,
@@ -202,6 +204,12 @@ export default function Sidebar({
             <span className="w-[7px] h-[7px] rounded-full bg-accent-amber/60 flex-shrink-0" />
             <span className="flex-1 text-left">My Templates ✦</span>
             <span className="font-code text-[11px] text-text-muted">{customCount}</span>
+          </button>
+
+          <button className={navItemClasses("community")} onClick={() => handleCat("community")}>
+            <span className="w-[7px] h-[7px] rounded-full bg-accent-green flex-shrink-0" />
+            <span className="flex-1 text-left">Community 🌐</span>
+            <span className="font-code text-[11px] text-text-muted">{communityCount}</span>
           </button>
 
           {/* Techniques section */}

@@ -87,6 +87,18 @@ export default function TemplateCard({
         />
       )}
 
+      {/* Community shared badge */}
+      {template.isShared && template.authorName && !isCustom && (
+        <div className="mx-4 mb-2 flex items-center gap-1.5">
+          <span className="font-code text-[9px] tracking-widest uppercase
+                           text-accent-green border border-accent-green/30
+                           bg-accent-green/10 px-2 py-0.5 rounded">
+            🌐 Community
+          </span>
+          <span className="text-[11px] text-text-muted">by {template.authorName}</span>
+        </div>
+      )}
+
       {/* Test button */}
       <div className="mx-4 mb-3 flex items-center">
         <button
