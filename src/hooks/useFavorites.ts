@@ -54,7 +54,7 @@ export function useFavorites(userId: string | null, authReady: boolean) {
         if (cloudIds.length === 0) {
           const local = loadLocal();
           if (local.size > 0) {
-            dbBulkInsertFavorites(userId, [...local])
+            dbBulkInsertFavorites(userId, Array.from(local))
               .catch(console.error)
               .finally(() => clearLocal());
             setFavorites(local);
